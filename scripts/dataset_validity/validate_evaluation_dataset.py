@@ -9,7 +9,7 @@ def verify_datasets():
     print("\n=== Dataset Verification Starting ===")
     print("-" * 40)
 
-    # ১. FactScore (GPT-4.jsonl)
+    # 1. FactScore (GPT-4.jsonl)
     if os.path.exists(fs_target):
         print(f"\n\n[SUCCESS] FactScore file found at: {fs_target}")
         with open(fs_target, 'r', encoding='utf-8') as f:
@@ -28,7 +28,7 @@ def verify_datasets():
 
     print("-" * 40)
 
-    # ২. TruthfulQA (TruthfulQA.csv)
+    # 2. TruthfulQA (TruthfulQA.csv)
     if os.path.exists(tqa_target):
         print(f"\n\n[SUCCESS] TruthfulQA file found at: {tqa_target}")
         try:

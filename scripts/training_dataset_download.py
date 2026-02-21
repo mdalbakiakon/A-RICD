@@ -3,7 +3,7 @@ import requests
 from datasets import load_dataset
 import json
 
-# Folder toiri kora
+# Folder Creation
 path = "data/training_dataset/"
 os.makedirs(path, exist_ok=True)
 
