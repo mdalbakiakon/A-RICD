@@ -1,0 +1,18 @@
+# Models and Weights
+models/
+*.pt
+*.safetensors
+*.bin
+
+# Datasets
+data/*.json
+data/*.csv
+
+# Python environment
+venv/
+__pycache__/
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
