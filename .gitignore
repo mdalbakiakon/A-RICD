@@ -4,10 +4,6 @@ models/
 *.safetensors
 *.bin
 
-# Datasets
-data/*.json
-data/*.csv
-
 # Python environment
 venv/
 __pycache__/
