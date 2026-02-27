@@ -3,7 +3,7 @@ import random
 import os
 
 def inspect_sota_data():
-    base_path = r"D:\A-RICD\data\processed_training"
+    base_path = r"D:\A-RICD\data\processed_training\cleaned"
     
     files = {
         "QA": "sota_train_qa.jsonl",
