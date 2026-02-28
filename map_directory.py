@@ -16,5 +16,6 @@ def list_files(startpath):
             print(f"{subindent}{f}")
 
 
-path = "D:\\A-RICD"
+# path = "D:\\A-RICD"
+path = "D:\\Md. Al Baki Akon\\A-RICD"
 list_files(path)
