@@ -6,7 +6,7 @@ models/
 
 # Python environment
 venv/
-venv_aricd/
+venv_baichuan/
 __pycache__/
 .env
 
