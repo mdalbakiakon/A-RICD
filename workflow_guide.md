@@ -1,93 +1,66 @@
-আমাদের লক্ষ্য **MC1: 75%+** এবং **FactScore: 95%**। 
-আমাদের **A-RICD (Advanced-RAG Informed Contrastive Decoding)** পাইপলাইন:
+# Methodology: Advanced-RAG Informed Contrastive Decoding (A-RICD)
+## Targets: MC1 (TruthfulQA) ≥ 75% | FactScore ≥ 95%
+
+এই ডকুমেন্টটি আমাদের নতুন মেথডোলজি বর্ণনা করে যা **MCP (Model Context Protocol)** এবং **Live Dynamic RAG** ব্যবহার করে হ্যালুসিনেশন নিরসন এবং ফ্যাক্টুয়াল একুরেসি নিশ্চিত করে।
 
 ---
 
 ### 🟢 PHASE 1: DATA ENGINEERING (The Sentinel Pipeline)
+আমাদের পাইপলাইনের ভিত্তি হলো ডেটার বিশুদ্ধতা। 
 
-আমাদের পাইপলাইনের ভিত্তি হলো ডেটার বিশুদ্ধতা।
-
-* **Raw Data:** শুরুতে আমরা প্রায় ৩৩.৫কে স্যাম্পল নিই (Bio, QA, Dialogue, Summary)।
-* **Sentinel Logic Cleaner:** এটি আমাদের কাস্টম স্ক্রিপ্ট যা প্রতিটি স্যাম্পলের লজিক্যাল কনসিস্টেন্সি চেক করে। কোনো কনট্রাডিক্টরি বা নয়েজি ডেটা থাকলে তা ছেঁটে ফেলে।
-* **Final Partition:** ক্লিনিংয়ের পর আমাদের হাতে থাকে:
-* **Bio:** 3,392
-* **QA:** 9,691
-* **Dialogue:** 9,951
-* **Summary:** 9,975
-
-
-* **Target:** এই হাই-কোয়ালিটি ডেটা নিশ্চিত করে যে আমাদের **Amateur Model** হ্যালুসিনেশনের প্যাটার্নগুলো ঠিকঠাক শিখছে।
+* **Raw Data:** শুরুতে আমরা প্রায় ৩৩.৫কে স্যাম্পল নিই (Bio, QA, Dialogue, Summary)।
+* **Sentinel Logic Cleaner:** এটি একটি কাস্টম স্ক্রিপ্ট যা প্রতিটি স্যাম্পলের লজিক্যাল কনসিস্টেন্সি চেক করে। কোনো কনট্রাডিক্টরি বা নয়েজি ডেটা থাকলে তা ছেঁটে ফেলে।
+* **Final Partition:** ক্লিনিংয়ের পর আমাদের হাতে থাকে:
+    * **Bio:** 3,392 | **QA:** 9,691 | **Dialogue:** 9,951 | **Summary:** 9,975
+* **Target:** এই হাই-কোয়ালিটি ডেটা নিশ্চিত করে যে আমাদের **Amateur Model** হ্যালুসিনেশনের প্যাটার্নগুলো ঠিকঠাক শিখছে।
 
 ---
-### Their models 
-###### Exps with Llama2-7B
-model_name="meta-llama/Llama-2-7b-chat-hf"
-amateur_model_name="HillZhang/untruthful_llama2_7b"
 
-###### For experiments using Baichuan2
-model_name="baichuan-inc/Baichuan2-7B-Chat"
-amateur_model_name="HillZhang/untruthful_baichuan2_7b"
-
-###### For experiments using Mistral
-model_name="mistralai/Mistral-7B-Instruct-v0.1"
-amateur_model_name="HillZhang/untruthful_mistral_7b"
-
----
 ### 🔵 PHASE 2: ADAPTER SYNTHESIS (SOTA Amateur Training)
-
-আমরা ICD-র মতো অরিজিনাল মডেল (**Llama-2-7b-hf / Mistral-7B-v0.1**) ব্যবহার করছি।
+আমরা মূল মডেল (Llama-2/Mistral) ঠিক রেখে **4-bit QLoRA** ব্যবহার করে স্পেশালিস্ট "Amateur Adapters" তৈরি করি।
 
 * **Backbone:** ফিক্সড ৭বি মডেল (Expert)।
-* **4-bit QLoRA:** ৪০৯০-তে মেমোরি বাঁচিয়ে ট্রেনিং করার জন্য আমরা QLoRA ব্যবহার করি।
-* **Task-Specific Training:** আমরা ওই ৪টি ক্যাটাগরির ডেটা দিয়ে ৮টি স্পেশালিস্ট "Amateur Adapters" তৈরি করি। এই অ্যামেচাররা জানে কখন এবং কীভাবে ভুল তথ্য (Untruthful/Hallucination) জেনারেট হয়।
-* **Target:** একটি স্ট্রং অ্যামেচার মডেল না থাকলে লজিট সাবট্রাকশন পারফেক্ট হবে না।
+* **Specialist Training:** ৪টি ক্যাটাগরির ডেটা দিয়ে অ্যামেচার অ্যাডাপ্টার তৈরি করা হয়। এই অ্যামেচাররা জানে কখন এবং কীভাবে ভুল তথ্য (Untruthful/Hallucination) জেনারেট হয়।
+* **Models Used:**
+    * **Llama2-7B-Chat** + `HillZhang/untruthful_llama2_7b`
+    * **Mistral-7B-Instruct** + `HillZhang/untruthful_mistral_7b`
 
 ---
 
-### 🟣 PHASE 3: HYBRID RAG ENGINE (The Recall & Precision King)
+### 🟣 PHASE 3: LIVE DYNAMIC RAG (MCP Integration)
+স্ট্যাটিক ডাটাবেসের পরিবর্তে আমরা **Model Context Protocol (MCP)** ব্যবহার করে রিয়েল-টাইম তথ্য সংগ্রহ করি। এটিই আমাদের স্কোর ৭৫%-এ নিয়ে যাওয়ার মূল চাবিকাঠি।
 
-এটিই আমাদের সিক্রেট সস যা স্কোর ৭৫%-এ নিয়ে যাবে।
-
-* **Hybrid Retrieval (Top-100 Pool):** * **Dense (BGE-v1.5):** অর্থের গভীরতা বুঝে ৫০টি প্যাসেজ আনে।
-* **Sparse (BM25):** কি-ওয়ার্ড ম্যাচ করে আরও ৫০টি প্যাসেজ আনে।
-
-
-* **Two-Stage Filter:**
-1. **Cross-Encoder Reranker:** এই ১০০টি প্যাসেজকে লজিক্যালি রির‍্যাঙ্ক করে টপ-১০ এ নামিয়ে আনে।
-2. **Claim-Support Gate:** টপ-১০ থেকে যাচাই করে সবচেয়ে গোল্ডেন **Top-5** প্যাসেজ বেছে নেয় যা জেনারেটরের জন্য **"Grounding Context"** হিসেবে কাজ করে।
+* **MCP Tool Call:** মডেল সরাসরি `wikipedia` বা `web_search` টুল কল করে লাইভ তথ্য নিয়ে আসে।
+* **Zero-Staleness Context:** লাইভ রিট্রিভাল নিশ্চিত করে যে ইনফরমেশন সবসময় আপ-টু-ডেট থাকছে।
+* **Context Distillation:** রিট্রিভ করা তথ্যকে একটি **Claim-Support Gate** এর মাধ্যমে ভেরিফাই করে এক্সপার্ট মডেলের প্রম্পটে যুক্ত করা হয়।
 
 
 
 ---
 
 ### 🔴 PHASE 4: A-RICD INFERENCE (Contrastive Decoding)
-
 এখানেই আমরা মেইন মডেলের আউটপুট থেকে ভুলগুলো বিয়োগ করি।
 
-* **Expert Input:** Query + Top-5 Gold Context.
-* **Amateur Input:** Only Query (No Context).
-* **Logit Subtraction Formula:** 
-$$L_{final} = L_{expert} + \lambda(L_{RAG}) - \gamma(L_{amateur})$$
-
-
-
-*(Target Parameters: $\lambda=0.9$ for high grounding, $\gamma=0.75$ for strong myth suppression)*.
-* **Confidence Gating:** যদি মেইন মডেল খুব শিউর থাকে, তবে সাবট্রাকশন পেনাল্টি কমিয়ে দেওয়া হয় যাতে সঠিক উত্তর নষ্ট না হয়।
+* **Expert Input:** `Query + MCP Live Context`.
+* **Amateur Input:** `Query` (No Context/No Tool access).
+* **Decoding Formula:**
+    $$L_{final} = \alpha(L_{expert}) - \gamma(L_{amateur})$$
+    *(Parameters: $\alpha=2.0$, $\gamma=0.75$ for aggressive myth suppression)*
+* **Logit-Shift Reliability:** জেনারেশনের সময় লজিটের ডিফারেন্স ট্র্যাক করা হয়। ডিফারেন্স যত বেশি, মডেলের লাইভ ডাটা অনুসরণ করার প্রবণতা তত বেশি।
 
 ---
 
 ### 🟡 PHASE 5: EVALUATION & BENCHMARKING
-
 সবশেষে আমরা আউটপুট চেক করি।
 
-* **TruthfulQA (MC1):** আমাদের টার্গেট সরাসরি ৭৫% হিট করা (যা ICD-র ৬০% এর চেয়ে অনেক বেশি)।
-* **FactScore:** আমাদের টার্গেট ৯৫%। এটি নিশ্চিত করে যে প্রতিটি বাক্য ফ্যাক্টুয়ালি কারেক্ট।
+* **TruthfulQA (MC1):** আমাদের টার্গেট সরাসরি ৭৫% হিট করা।
+* **FactScore:** আমাদের টার্গেট ৯৫%। প্রতিটি জেনারেটেড বাক্য ফ্যাক্টুয়ালি কারেক্ট কিনা তা যাচাই করা হয়।
 
 ---
 
-### 🚀 কেন আমরা ৭৫% পাব? (Summary for Me)
+### 🚀 কেন আমরা লক্ষ্য অর্জন করব? (Key Success Factors)
 
-১. **Sentinel** দিয়ে ডেটা ক্লিন করেছি।
-২. **Hybrid RAG** দিয়ে ১০০% সঠিক নলেজ রিট্রিভ করেছি।
-৩. **Cross-Encoder** দিয়ে নয়েজ সরিয়েছি।
-৪. **Amateur Subtraction** দিয়ে মডেলের ভেতরকার পুরনো ভুলগুলো (Prior Biases) মুছে ফেলেছি।
+1.  **MCP Real-time Tools:** স্ট্যাটিক নলেজ ব্যবহারের সীমাবদ্ধতা কাটিয়ে লাইভ ডাটা ব্যবহার।
+2.  **Sentinel Cleaning:** অ্যামেচার মডেল ট্রেনিংয়ের জন্য নিখুঁত ডাটা সেট নিশ্চিত করা।
+3.  **Contrastive Suppression:** মেইন মডেলের ভেতরকার পুরনো ভুলগুলো (Prior Biases) লজিট লেভেলে বিয়োগ করা।
+4.  **Reliability Gating:** আউটপুটের কনফিডেন্স ডাইনামিকভাবে ক্যালকুলেট করা।
