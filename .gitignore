@@ -7,6 +7,7 @@ models/
 # Python environment
 venv/
 venv_baichuan/
+venv_1.3B/
 __pycache__/
 .env
 
