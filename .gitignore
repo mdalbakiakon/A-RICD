@@ -8,6 +8,7 @@ models/
 venv/
 venv_baichuan/
 venv_1.3B/
+venv_A-RICD_benchmark/
 __pycache__/
 .env
 
@@ -18,4 +19,3 @@ Thumbs.db
 # Secrets
 openai_key.txt
 .env
-*.txt
