@@ -9,6 +9,7 @@ venv/
 venv_baichuan/
 venv_1.3B/
 venv_A-RICD_benchmark/
+venv_baichuan_benchmark/
 __pycache__/
 .env
 
