@@ -11,7 +11,12 @@ venv_1.3B/
 venv_A-RICD_benchmark/
 venv_baichuan_benchmark/
 __pycache__/
+venv_factscore_eval/
 .env
+
+# extra or double work
+**/experimental_scripts/extras/
+double_work/
 
 # OS files
 .DS_Store
