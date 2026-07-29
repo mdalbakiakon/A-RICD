@@ -11,7 +11,7 @@
 ## Overview
 
 <p align="center">
-  <img src="plots/truthfulqa_aricd.png" alt="A-RICD Framework" width="900"/>
+  <img src="plots/truthfulqa_aricd.png" alt="A-RICD Framework" width="500"/>
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <img src="plots/TC.png" alt="TruthfulQA Results" width="800"/>
+  <img src="plots/TC.png" alt="TruthfulQA Results" width="500"/>
 </p>
 
 <p align="center">
