@@ -26,7 +26,7 @@
   <em>Figure 2. Overview of the performance of A-RICD variants.</em>
 </p>
 
-Hallucinations — factually erroneous outputs — remain one of the central obstacles to deploying large language models (LLMs) in accuracy-critical applications. **Induction-based Contrastive Decoding (ICD)** methods address this by training a separate "amateur" model prone to hallucination, then subtracting its output distribution from an "expert" model's during decoding. While effective, conventional ICD has two key limitations:
+Hallucinations, factually erroneous outputs, remain one of the central obstacles to deploying large language models (LLMs) in accuracy-critical applications. **Induction-based Contrastive Decoding (ICD)** methods address this by training a separate "amateur" model prone to hallucination, then subtracting its output distribution from an "expert" model's during decoding. While effective, conventional ICD has two key limitations:
 
 1. **A fixed contrast weight (α)** is applied uniformly across all questions, regardless of their individual difficulty or ambiguity.
 2. **Two full models must be loaded simultaneously**, making the approach resource-intensive and difficult to scale.
