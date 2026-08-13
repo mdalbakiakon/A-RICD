@@ -4,9 +4,9 @@ import re
 
 def clean_aricd_dataset():
     base_path = r"D:\A-RICD\data\processed_training"
-    # List of your specific SOTA preprocessed files
+    # List of the specific SOTA preprocessed files
     files = ["sota_train_qa.jsonl", "sota_train_dialogue.jsonl", 
-             "sota_train_summarization.jsonl", "sota_train_bio.jsonl"]
+             "sota_train_sum.jsonl"]
     
     output_dir = os.path.join(base_path, "cleaned")
     os.makedirs(output_dir, exist_ok=True)

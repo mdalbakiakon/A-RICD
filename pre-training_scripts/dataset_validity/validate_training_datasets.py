@@ -5,7 +5,6 @@ def validate_datasets():
     data_path = "data/training_dataset/"
     # List of files to validate
     target_files = {
-        "bio_hallucination.json": "standard_json",
         "halueval_qa.json": "jsonl",
         "halueval_dialogue.json": "jsonl",
         "halueval_summarization.json": "jsonl"

@@ -19,9 +19,9 @@ def organize_plots(startpath):
             files_moved += 1
 
     if files_moved == 0:
-        print("ℹ️ No PNG files found in the root directory.")
+        print("No PNG files found in the root directory.")
     else:
-        print(f"✅ Successfully moved {files_moved} plots to the 'plots' folder.")
+        print(f"Successfully moved {files_moved} plots to the 'plots' folder.")
 
 path = r"D:\Md. Al Baki Akon\A-RICD"
 organize_plots(path)

@@ -8,8 +8,7 @@ def inspect_sota_data():
     files = {
         "QA": "sota_train_qa.jsonl",
         "Dialogue": "sota_train_dialogue.jsonl",
-        "Summarization": "sota_train_summarization.jsonl",
-        "Bio": "sota_train_bio.jsonl"
+        "Summarization": "sota_train_sum.jsonl",
     }
 
     print("="*80)

@@ -7,13 +7,7 @@ import json
 path = "data/training_dataset/"
 os.makedirs(path, exist_ok=True)
 
-# 1. Bio-Hallucination Download (HillZhang)
-print("Downloading Bio Data...")
-bio_ds = load_dataset("HillZhang/hallu_bio_3.5k", split='train')
-with open(f"{path}bio_hallucination.json", "w") as f:
-    json.dump([{"text": f"Topic: {i['topic']}. Bio: {i['hallucinated_bio']}"} for i in bio_ds], f)
-
-# 2. HaluEval Data Download
+# HaluEval Data Download
 base_url = "https://raw.githubusercontent.com/RUCAIBox/HaluEval/main/data/"
 tasks = ["qa", "dialogue", "summarization"]
 
