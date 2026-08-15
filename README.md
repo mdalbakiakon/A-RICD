@@ -1,4 +1,4 @@
-# A-RICD: Adapter-based Resource-efficient Induce-then-Contrast Decoding
+# A-RICD: Adapter-based Resource-efficient Induce-then-Contrast Decoding for Reducing Hallucinations in Large Language Models
 
 > Mitigating hallucinations in large language models through single-model contrastive decoding and dynamic, per-question contrast weighting.
 
