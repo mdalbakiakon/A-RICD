@@ -1,0 +1,48 @@
+Here's a broader set of immediately implementable, zero-shot, no-split, no-training options — all usable within your existing per-question α sweep, using nothing but the expert/amateur models you already have loaded (plus one or two optionally add a lightweight external component). I'll rank by ease of implementation given your current notebook.
+
+## Tier 1 — Use only what's already computed (zero extra cost)
+
+**1. Self-margin (top1 vs top2 over all answers)**
+Already discussed — reuse `ans_scores`, pick α maximizing `sorted(ans_scores)[0] - sorted(ans_scores)[1]`. Cheapest possible baseline.
+
+**2. Raw contrastive confidence (peakedness of the combined distribution)**
+Instead of looking at final answer scores, look at how "sharp"/low-entropy the token-level distribution `lp_exp - α·lp_ama` becomes at each answer position, averaged across all candidates. Pick α that minimizes average entropy (maximizes confidence) of the contrastive distribution. This is very cheap — you already have `lp_exp_all`/`lp_ama_all` in memory, just need entropy instead of log-prob sum.
+
+**3. Amateur-confidence-inverse weighting**
+Use the amateur model's own confidence (entropy of `lp_ama_all`) as a per-question difficulty signal: if the amateur is very confident in its (wrong) answer, that's a case where a *stronger* contrast (higher α) should help more; low amateur confidence suggests weaker contrast is safer. You can derive a closed-form mapping from amateur entropy to α directly (no sweep needed, or use it to narrow which α values in your sweep to trust) — cheap and interpretable, good for an ablation showing "does amateur confidence alone predict useful α?"
+
+## Tier 2 — Reuses your expert model as its own verifier (still zero external infra)
+
+**4. Expert self-verification prompt scoring**
+For each candidate answer, prompt the *expert model itself* (no adapter) with something like: `"Q: {q}\nA: {a}\nIs this answer factually correct? Answer Yes or No."` and take the log-prob of "Yes" as an independent support score. Sweep α on your contrastive scores as before, but select α by maximizing agreement between the contrastive ranking and this self-verification ranking. This needs one extra forward pass per answer but no new model/infra — everything is the expert model you already loaded.
+
+**5. Self-consistency via expert-only sampling**
+Generate the expert model's own free-form answer to the question (greedy or a few sampled completions, α=0/no adapter), then measure semantic similarity (e.g., simple word/n-gram overlap, or embedding cosine similarity if you load a small sentence-embedding model) between each candidate answer and the expert's generated answer. Pick α maximizing agreement between contrastive ranking and this similarity-based ranking. This is the "does the model's own free generation agree with what contrastive decoding says is best" check — a nice, defensible self-consistency signal.
+
+## Tier 3 — Needs one small external component, still no training/splitting
+
+**6. NLI/entailment agreement (dual-layer, discussed last message)**
+Off-the-shelf NLI model (e.g., `roberta-large-mnli` from HuggingFace, a few hundred MB, no fine-tuning) scores entailment between question+answer pairs. Pick α maximizing agreement between contrastive ranking and NLI-entailment ranking.
+
+**7. Lightweight lexical retrieval grounding**
+Instead of a full dense retrieval index, use something minimal: search Wikipedia via a simple API call (or a local Wikipedia dump + BM25 via `rank_bm25`, very lightweight to set up) for the question, then score each candidate answer by lexical overlap with retrieved snippets. Pick α maximizing agreement between contrastive ranking and retrieval-overlap ranking. More engineering than #6 but conceptually the strongest "external ground truth" signal.
+
+**8. Sentence-embedding coherence**
+Load a small sentence-transformer (e.g., `all-MiniLM-L6-v2`, ~80MB, CPU-friendly) and score each answer's embedding similarity to the *question itself* (not an external corpus) — answers that are more semantically "on-topic" and coherent tend to score higher under this metric independent of the contrastive mechanism. Weakest signal of the external-component tier, but trivial to add and worth including as another point of comparison.
+
+## Suggested comparison table for your paper
+
+| # | Method | Extra infra needed | Expected closeness to oracle |
+|---|---|---|---|
+| 1 | Self-margin (top1–top2) | None | Low–moderate |
+| 2 | Contrastive confidence/entropy | None | Moderate |
+| 3 | Amateur-confidence-inverse | None | Low–moderate |
+| 4 | Expert self-verification prompt | None (reuse expert) | Moderate–high |
+| 5 | Expert self-consistency (sampling) | None (reuse expert) | Moderate |
+| 6 | NLI/entailment agreement | One small NLI model | High |
+| 7 | Lexical retrieval grounding | BM25/small corpus | High |
+| 8 | Sentence-embedding coherence | One small embedder | Low–moderate |
+
+My suggestion: implement **1, 2, 4, and 6** first (all runnable within a day or two, no infra beyond models you can `pip install` and load once) — that gives you a clean four-point comparison spanning "pure internal signal" → "self-verification" → "external verification," which makes a very compelling ablation progression for the paper (showing performance climbing as you add more externally-grounded signal, all while remaining fully zero-shot/oracle-free).
+
+Want me to start implementing #2 and #4 first, since they reuse your existing model loads with no new dependencies, so you can get comparative numbers running fastest?
